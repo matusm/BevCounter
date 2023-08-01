@@ -1,28 +1,25 @@
 ﻿using System;
-using Bev.Counter;
 using System.Threading;
-using MyConsoleUI;
 using System.Globalization;
 using System.Linq;
 using System.IO;
+using Bev.Counter;
+using Bev.UI;
 
 namespace HpLogger
 {
     class Program
     {
-
         static string sFileName;
         static StreamWriter hFile;
-        static MyUI ui;             // to enable nice output from all static methods
         static string outputFormat; // the format for the y-value
 
         static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             Options options = new Options();    // for command line stuff
-            ui = new MyUI();
-            ui.Verbatim = !options.bQuiet;      // no console output if not verbatim
-            ui.Welcome();
+            ConsoleUI.Verbatim = !options.bQuiet;      // no console output if not verbatim
+            ConsoleUI.Welcome();
 
             #region The CLA stuff
             string[] aFileNames;
@@ -30,18 +27,18 @@ namespace HpLogger
                 Console.WriteLine("*** ParseArgumentsStrict returned false");
             aFileNames = options.ListOfFileNames.ToArray();
             if (aFileNames.Length == 0)
-                sFileName = ui.Title;
+                sFileName = ConsoleUI.Title;
             if (aFileNames.Length == 1)
                 sFileName = Path.ChangeExtension(aFileNames[0], null);
             if (aFileNames.Length > 1)
-                ui.ErrorExit("More than one file name given!", 2);
+                ConsoleUI.ErrorExit("More than one file name given!", 2);
             sFileName = Path.ChangeExtension(sFileName, "dat");
             #endregion
 
             // instantiate the counter object
-            ui.StartOperation("Initializing stuff");
+            ConsoleUI.StartOperation("Initializing stuff");
             SerialHpCounter ctr = new SerialHpCounter(options.comPort);
-            if (!ctr.IsConnected) ui.ErrorExit("Counter not ready (wrong port?)!", 1);
+            if (!ctr.IsConnected) ConsoleUI.ErrorExit("Counter not ready (wrong port?)!", 1);
 
             // register the event handlers
             ctr.UpdatedEventHandler += UpdateView;
@@ -87,7 +84,7 @@ namespace HpLogger
 
             // output file stuff
             hFile = new StreamWriter(sFileName);
-            hFile.WriteLine("Output of {0} ver. {1}", ui.Title, ui.FullVersion);
+            hFile.WriteLine("Output of {0} ver. {1}", ConsoleUI.Title, ConsoleUI.FullVersion);
             if (options.sComment != "") hFile.WriteLine(options.sComment);
             hFile.WriteLine("Logging started at "+ctr.InitTime.ToString("dd.MM.yyyy hh:mm"));
             hFile.WriteLine("Manufacturer: " + ctr.InstrumentManufacturer);
@@ -102,13 +99,13 @@ namespace HpLogger
             hFile.WriteLine("Column 2: " + columnDescription);
             hFile.WriteLine("@@@@");
             hFile.Close();
-            ui.Done();
+            ConsoleUI.Done();
 
             // start the actual measurement
             ctr.StartMeasurementLoopThread(options.numSampl);
 
             // continue until user presses 'q' or 'Q'
-            ui.WriteLine("Press 'q' to exit application. (May take some time)");
+            ConsoleUI.WriteLine("Press 'q' to exit application. (May take some time)");
             ConsoleKeyInfo key;
             do
             {
@@ -128,7 +125,7 @@ namespace HpLogger
             hFile = File.AppendText(sFileName);
             hFile.WriteLine(line);
             hFile.Close();
-            ui.WriteLine(line);
+            ConsoleUI.WriteLine(line);
         }
         #endregion
 
@@ -137,7 +134,7 @@ namespace HpLogger
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             var ob = sender as SerialHpCounter;
-            ui.WriteLine("Application stopped, no errors.");
+            ConsoleUI.WriteLine("Application stopped, no errors.");
             Environment.Exit(0);
         }
         #endregion
