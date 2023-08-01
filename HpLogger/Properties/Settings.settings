@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HpLogger.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="BEV1" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;f +2.345 3.5&lt;/string&gt;
+  &lt;string&gt;d +2.345 3.5&lt;/string&gt;
+  &lt;string&gt;e +2.345 3.5&lt;/string&gt;
+  &lt;string&gt;g +2.345 3.5&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="BEV2" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;d -2.345 3.5&lt;/string&gt;
+  &lt;string&gt;e -2.345 3.5&lt;/string&gt;
+  &lt;string&gt;g +2.345 3.5&lt;/string&gt;
+  &lt;string&gt;f -2.345 3.5&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="CCL" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;d 0 12&lt;/string&gt;
+  &lt;string&gt;e 0 12&lt;/string&gt;
+  &lt;string&gt;f 0 12&lt;/string&gt;
+  &lt;string&gt;g 0 12&lt;/string&gt;
+  &lt;string&gt;h 0 12&lt;/string&gt;
+  &lt;string&gt;i 0 12&lt;/string&gt;
+  &lt;string&gt;j 0 12&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
