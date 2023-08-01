@@ -23,7 +23,7 @@ namespace Bev.Counter
 
         public Srs620(string com) : this()
         {
-            portname = com;
+            portName = com;
         }
 
         public override void Connect()

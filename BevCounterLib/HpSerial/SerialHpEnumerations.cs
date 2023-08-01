@@ -1,11 +1,8 @@
 ﻿namespace Bev.Counter
 {
-    /// <summary>
-    /// Unit symbols provided by this special counter type,
-    /// </summary>
     public enum UnitSymbol
     {
-        None,       // no unit give, e.g. in totalize, Ratio
+        None,       // no unit given, e.g. in totalize, Ratio. unit = 1
         Unknown,    // unidentified unit (yet)
         Hz,         // as the name implies
         MHz,        // as the name implies
@@ -16,9 +13,6 @@
         V           // voltage
     }
 
-    /// <summary>
-    /// Possible modes for this special counter typ. Equivalent to <c>base.MeasurementMode</c>.
-    /// </summary>
     public enum MeasureMode
     {
         Unknown,

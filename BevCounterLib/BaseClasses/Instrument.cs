@@ -78,8 +78,8 @@
         /// <param name="s">The string to be checked.</param>
         private string EditString(string s)
         {
-            if (s.Trim() != "") return s;
-            return "< not given >";
+            if (string.IsNullOrWhiteSpace(s)) return "< not given >";
+            return s.Trim();
         }
         #endregion
     }

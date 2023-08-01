@@ -22,7 +22,7 @@ namespace Bev.Counter
 
         public Agilent53230A(string port) : this()
         {
-            portname = port;
+            portName = port;
             Connect();
         }
         #endregion
@@ -36,7 +36,7 @@ namespace Bev.Counter
                 return;
             try
             {
-                ioobj.IO = (IMessage)rm.Open(portname, AccessMode.NO_LOCK, 2000, "Timeout = 20000 ; TerminationCharacter = 10 ; TerminationCharacterEnabled=true");
+                ioobj.IO = (IMessage)rm.Open(portName, AccessMode.NO_LOCK, 2000, "Timeout = 20000 ; TerminationCharacter = 10 ; TerminationCharacterEnabled=true");
                 connected = true;
                 //Reset();
             }
@@ -115,7 +115,7 @@ namespace Bev.Counter
                 SendCommand("CONF:FREQ, (@1)");
                 SendCommand("TRIG:COUN 1");
                 SendCommand("SENS:FREQ:GATE:SOUR TIME");
-                SendCommand("SENS:FREQ:GATE:TIME " + dGateTime);
+                SendCommand("SENS:FREQ:GATE:TIME " + gateTimeValue);
             }
             else
             {

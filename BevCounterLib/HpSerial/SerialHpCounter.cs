@@ -8,7 +8,7 @@ namespace Bev.Counter
 {
     /// <summary>
     /// Derived class for the use of HP/Agilent counters which are connected via RS232.
-    /// In this mode send data can be received only. No way to programaticaly change intrument's settings.
+    /// In this mode data can be received only. No way to programaticaly change instrument's settings.
     /// </summary>
     public class SerialHpCounter : Counter
     {
@@ -26,13 +26,13 @@ namespace Bev.Counter
         /// <summary>
         /// Initializes a new instance of the <see cref="T:HpSerial.SerialHpCounter"/> class.
         /// </summary>
-        /// <param name="port">RS232 port name.</param>
+        /// <param name="portName">RS232 port name.</param>
         /// <remarks>
         /// There is a virtual member call in constructor!
         /// </remarks>
-        public SerialHpCounter(string port)
+        public SerialHpCounter(string portName)
         {
-            portname = port;
+            base.portName = portName;
             InstrumentManufacturer = "HP / Agilent";
             IdentifyInstrument();
             Connect();
@@ -42,8 +42,8 @@ namespace Bev.Counter
         /// <summary>
         /// Initializes a new instance of the <see cref="T:HpSerial.SerialHpCounter"/> class.
         /// </summary>
-        /// <param name="iport">RS232 port number.</param>
-        public SerialHpCounter(int iport) : this($"COM{iport}") { }
+        /// <param name="portNumber">RS232 port number.</param>
+        public SerialHpCounter(int portNumber) : this($"COM{portNumber}") { }
 
         #endregion
 
@@ -58,11 +58,11 @@ namespace Bev.Counter
         /// Estimates the current gate time of counter and updates <c>dGateTime</c>.
         /// Only 0.1 s or integer seconds can be returned!
         /// </summary>
-        /// <param name="n">Number of samples to be averaged.</param>
+        /// <param name="sampleSize">Number of samples to be averaged.</param>
         /// <remarks>Sets <c>dGateTime</c> to 0 if not successful.</remarks>
-        public void EstimateGateTime(int n)
+        public void EstimateGateTime(int sampleSize)
         {
-            double? t = GetTimeBetweenSamples(n);
+            double? t = GetTimeBetweenSamples(sampleSize);
             gateTime = InterpretGateTime(t);
             GateTimeToDouble();
         }
@@ -90,7 +90,8 @@ namespace Bev.Counter
         /// </summary>
         public void ForceTotalizeMode()
         {
-            if (mode == MeasureMode.Unknown) Mode = MeasureMode.Totalize;
+            if (mode == MeasureMode.Unknown) 
+                Mode = MeasureMode.Totalize;
         }
         #endregion
 
@@ -100,7 +101,8 @@ namespace Bev.Counter
         /// </summary>
         protected override void StartMeasurementLoop()
         {
-            if (!connected) return;
+            if (!connected) 
+                return;
             portCOM.DiscardInBuffer();
             base.StartMeasurementLoop();
         }
@@ -113,7 +115,7 @@ namespace Bev.Counter
             Disconnect();
             try
             {
-                portCOM = new SerialPort(portname, 9600, Parity.None, 8, StopBits.One);
+                portCOM = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
                 portCOM.ReadTimeout = 20000;
                 portCOM.Open();
                 portCOM.Handshake = Handshake.None;
@@ -163,15 +165,15 @@ namespace Bev.Counter
         /// <summary>
         /// Determines the average sample interval by performing <c>n</c> measurements.
         /// </summary>
-        /// <param name="n">Number of samples to be averaged.</param>
+        /// <param name="sampleSize">Number of samples to be averaged.</param>
         /// <returns>The average sample interval in s.</returns>
         /// <remarks>Method can take a very long time to return!</remarks>
-        private double? GetTimeBetweenSamples(int n)
+        private double? GetTimeBetweenSamples(int sampleSize)
         {
-            if (n < 2) n = 2;
+            if (sampleSize < 2) sampleSize = 2;
             List<double> times = new List<double>();
             _GetCounterValue();  // first value to be discarded
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < sampleSize; i++)
                 if (_GetCounterValue() != null) times.Add(outputInterval);
             if (times.Count == 0) return null;
             return times.Average();
@@ -183,7 +185,7 @@ namespace Bev.Counter
         /// <remarks>Can be completly wrong!</remarks>
         private void IdentifyInstrument()
         {
-            switch (portname.ToUpper().Trim())
+            switch (portName.ToUpper().Trim())
             {
                 case "COM6":
                     InstrumentManufacturer = "HEWLETT PACKARD";
@@ -247,7 +249,6 @@ namespace Bev.Counter
             MeasureMode modeOld = mode; // store the actual mode
             unit = UnitSymbol.None;
 
-            // first strip the \r and split the string in its words
             string[] separator = { " ", "\t" };
             string[] token = str.Replace("\r", "").Split(separator, StringSplitOptions.RemoveEmptyEntries);
 
@@ -282,8 +283,8 @@ namespace Bev.Counter
             {
                 Mode = MeasureMode.Totalize;
                 // here we could divide by gateTime to obtain a frequency
-                if (tempValue != null && dGateTime != 0)
-                    return tempValue / dGateTime;
+                if (tempValue != null && gateTimeValue != 0)
+                    return tempValue / gateTimeValue;
             }
 
             return tempValue;
@@ -362,9 +363,7 @@ namespace Bev.Counter
         /// <remarks>The decimal separator must be the point.</remarks>
         double? StringToNumber(string str)
         {
-            double x;
-            bool success = double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out x);
-            if (success) return x;
+            if (double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out double x)) return x;
             return null;
         }
 
