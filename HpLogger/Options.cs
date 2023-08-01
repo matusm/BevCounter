@@ -1,6 +1,5 @@
 ﻿using CommandLine;
 using CommandLine.Text;
-using System;
 using System.Collections.Generic;
 
 namespace HpLogger
@@ -8,22 +7,22 @@ namespace HpLogger
     public class Options
     {
         [Option('c', "comport", DefaultValue = 1, HelpText = "RS232 port # the counter is connected to")]
-        public int comPort { get; set; }
+        public int ComPortNumber { get; set; }
 
         [Option('n', DefaultValue = int.MaxValue, HelpText = "Number of data points to record")]
-        public int numSampl { get; set; }
+        public int NumberOfSamples { get; set; }
 
         [Option('q', "quiet", HelpText = "Quiet mode. No screen output (except for errors).")]
-        public bool bQuiet { get; set; }
+        public bool BeQuiet { get; set; }
 
         [Option('g', "gatetime", DefaultValue = 0, HelpText = "Gate time value in s.")]
-        public double gTime { get; set; }
+        public double GateTime { get; set; }
 
         [Option('t', "totalize", HelpText = "Force totalize mode for unknown mode.")]
-        public bool bTotalize { get; set; }
+        public bool ForceTotalize { get; set; }
 
         [Option("comment", DefaultValue = "", HelpText = "Comment for outpot file.")]
-        public string sComment { get; set; }
+        public string UserComment { get; set; }
 
         [ValueList(typeof(List<string>), MaximumElements = 1)]
         public IList<string> ListOfFileNames { get; set; }
@@ -47,12 +46,8 @@ namespace HpLogger
             help.AddPreOptionsLine("");
             help.AddPreOptionsLine("Usage: " + AppName + " filename1 [options]");
             help.AddPostOptionsLine("");
-            //help.AddPostOptionsLine("Supported values for -r: 1=min 2=max 3=avarage 4=mid 5=bias 6=first 7=last 8=center 9=linear 10=LSQ");
-
             help.AddOptions(this);
-
             return help;
         }
-
     }
 }

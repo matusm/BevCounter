@@ -10,52 +10,52 @@ namespace HpLogger
 {
     class Program
     {
-        static string sFileName;
-        static StreamWriter hFile;
+        static string outputFilename;
+        static StreamWriter streamWriter;
         static string outputFormat; // the format for the y-value
 
         static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            Options options = new Options();    // for command line stuff
-            ConsoleUI.Verbatim = !options.bQuiet;      // no console output if not verbatim
+            Options options = new Options();
+            ConsoleUI.Verbatim = !options.BeQuiet;
             ConsoleUI.Welcome();
 
             #region The CLA stuff
-            string[] aFileNames;
             if (!CommandLine.Parser.Default.ParseArgumentsStrict(args, options))
                 Console.WriteLine("*** ParseArgumentsStrict returned false");
-            aFileNames = options.ListOfFileNames.ToArray();
-            if (aFileNames.Length == 0)
-                sFileName = ConsoleUI.Title;
-            if (aFileNames.Length == 1)
-                sFileName = Path.ChangeExtension(aFileNames[0], null);
-            if (aFileNames.Length > 1)
+            string[] filenames;
+            filenames = options.ListOfFileNames.ToArray();
+            if (filenames.Length == 0)
+                outputFilename = ConsoleUI.Title;
+            if (filenames.Length == 1)
+                outputFilename = Path.ChangeExtension(filenames[0], null);
+            if (filenames.Length > 1)
                 ConsoleUI.ErrorExit("More than one file name given!", 2);
-            sFileName = Path.ChangeExtension(sFileName, "dat");
+            outputFilename = Path.ChangeExtension(outputFilename, "dat");
             #endregion
 
-            // instantiate the counter object
             ConsoleUI.StartOperation("Initializing stuff");
-            SerialHpCounter ctr = new SerialHpCounter(options.comPort);
-            if (!ctr.IsConnected) ConsoleUI.ErrorExit("Counter not ready (wrong port?)!", 1);
+            SerialHpCounter hpCounter = new SerialHpCounter(options.ComPortNumber);
+            if (!hpCounter.IsConnected) 
+                ConsoleUI.ErrorExit("Counter not ready (wrong port?)!", 1);
 
             // register the event handlers
-            ctr.UpdatedEventHandler += UpdateView;
-            ctr.ReadyEventHandler += LoopReady;
+            hpCounter.UpdatedEventHandler += UpdateView;
+            hpCounter.ReadyEventHandler += LoopReady;
 
             // consume the missing command line options
-            if (options.bTotalize) ctr.ForceTotalizeMode();
-            if (options.gTime > 0) ctr.ForceGateTime(options.gTime);
+            if (options.ForceTotalize) hpCounter.ForceTotalizeMode();
+            if (options.GateTime > 0) hpCounter.ForceGateTime(options.GateTime);
 
             // determine the output quantity for formatting
             string columnDescription = "<not set>";
             outputFormat = "  {1}";
-            switch (ctr.Mode)
+            switch (hpCounter.Mode)
             {
                 case MeasureMode.Unknown:
                     columnDescription = "unknown quantity";
-                    if ((ctr.Unit == UnitSymbol.s) || (ctr.Unit == UnitSymbol.us))
+                    if ((hpCounter.Unit == UnitSymbol.s) || (hpCounter.Unit == UnitSymbol.us))
                         columnDescription = "period/risetime/width or some other time in s";
                     break;
                 case MeasureMode.Frequency:
@@ -83,57 +83,54 @@ namespace HpLogger
             }
 
             // output file stuff
-            hFile = new StreamWriter(sFileName);
-            hFile.WriteLine("Output of {0} ver. {1}", ConsoleUI.Title, ConsoleUI.FullVersion);
-            if (options.sComment != "") hFile.WriteLine(options.sComment);
-            hFile.WriteLine("Logging started at "+ctr.InitTime.ToString("dd.MM.yyyy hh:mm"));
-            hFile.WriteLine("Manufacturer: " + ctr.InstrumentManufacturer);
-            hFile.WriteLine("Type: " + ctr.InstrumentType);
-            hFile.WriteLine("Serial number: " + ctr.InstrumentSerialNumber);
-            hFile.WriteLine("(Instrument identification might be wrong!)");
-            hFile.WriteLine("Gate time: {0} s", ctr.GateTime);
-            hFile.WriteLine("Mode: {0}", ctr.Mode);
-            hFile.WriteLine("Unit: {0}", ctr.Unit);
-            hFile.WriteLine("Connected to " + ctr.Portname);
-            hFile.WriteLine("Column 1: time since start in s");
-            hFile.WriteLine("Column 2: " + columnDescription);
-            hFile.WriteLine("@@@@");
-            hFile.Close();
+            streamWriter = new StreamWriter(outputFilename);
+            streamWriter.WriteLine($"Output of {ConsoleUI.Title} ver. {ConsoleUI.FullVersion}");
+            if (options.UserComment != "") 
+                streamWriter.WriteLine($"User comment: {options.UserComment}");
+            streamWriter.WriteLine($"Logging started at {hpCounter.InitTime.ToString("dd.MM.yyyy hh:mm")}");
+            streamWriter.WriteLine($"Manufacturer: {hpCounter.InstrumentManufacturer}");
+            streamWriter.WriteLine($"Type: {hpCounter.InstrumentType}");
+            streamWriter.WriteLine($"Serial number: {hpCounter.InstrumentSerialNumber}");
+            streamWriter.WriteLine("(Instrument identification might be wrong!)");
+            streamWriter.WriteLine($"Gate time: {hpCounter.GateTime} s");
+            streamWriter.WriteLine($"Mode: {hpCounter.Mode}");
+            streamWriter.WriteLine($"Unit: {hpCounter.Unit}");
+            streamWriter.WriteLine($"Connected to {hpCounter.Portname}");
+            streamWriter.WriteLine("Column 1: time since start in s");
+            streamWriter.WriteLine($"Column 2: {columnDescription}");
+            streamWriter.WriteLine("@@@@");
+            streamWriter.Close();
             ConsoleUI.Done();
 
             // start the actual measurement
-            ctr.StartMeasurementLoopThread(options.numSampl);
+            hpCounter.StartMeasurementLoopThread(options.NumberOfSamples);
 
             // continue until user presses 'q' or 'Q'
             ConsoleUI.WriteLine("Press 'q' to exit application. (May take some time)");
-            ConsoleKeyInfo key;
-            do
-            {
-                key = Console.ReadKey(true);
-            } while ((key.KeyChar != 'q') && (key.KeyChar != 'Q'));
-            ctr.RequestStopMeasurementLoop();
+            do {} while (Console.ReadKey(true).Key != ConsoleKey.Q);
+            hpCounter.RequestStopMeasurementLoop();
         }
 
-        #region Data output
+        #region Data output handler
         static void UpdateView(object sender, EventArgs e)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            var ob = sender as SerialHpCounter;
+            SerialHpCounter ob = sender as SerialHpCounter;
             // format the output string
             double timeSinceStart = (ob.SampleTime - ob.InitTime).TotalSeconds;
-            string line = string.Format("{0,10:F1} " + outputFormat, timeSinceStart, ob.LastValue);
-            hFile = File.AppendText(sFileName);
-            hFile.WriteLine(line);
-            hFile.Close();
-            ConsoleUI.WriteLine(line);
+            string dataLine = string.Format("{0,10:F1} " + outputFormat, timeSinceStart, ob.LastValue);
+            streamWriter = File.AppendText(outputFilename);
+            streamWriter.WriteLine(dataLine);
+            streamWriter.Close();
+            ConsoleUI.WriteLine(dataLine);
         }
         #endregion
 
-        #region Exit
+        #region Exit handler
         static void LoopReady(object sender, EventArgs e)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            var ob = sender as SerialHpCounter;
+            SerialHpCounter ob = sender as SerialHpCounter;
             ConsoleUI.WriteLine("Application stopped, no errors.");
             Environment.Exit(0);
         }
