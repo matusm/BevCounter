@@ -59,7 +59,10 @@ namespace HpLogger
                         columnDescription = "period/risetime/width or some other time in s";
                     break;
                 case MeasureMode.Frequency:
-                    outputFormat = "{1,16:F3}";
+                    if(hpCounter.GateTime == GateTime.Gate10s)
+                        outputFormat = "{1,17:F4}";
+                    else
+                        outputFormat = "{1,16:F3}";
                     columnDescription = "frequency in Hz";
                     break;
                 case MeasureMode.Totalize:
