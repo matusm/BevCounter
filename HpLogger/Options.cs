@@ -14,6 +14,7 @@ namespace HpLogger
 
         [Option('q', "quiet", HelpText = "Quiet mode. No screen output (except for errors).")]
         public bool BeQuiet { get; set; }
+        public bool Verbatim => !BeQuiet;
 
         [Option('g', "gatetime", DefaultValue = 0, HelpText = "Gate time value in s.")]
         public double GateTime { get; set; }

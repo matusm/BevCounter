@@ -16,9 +16,9 @@ namespace HpLogger
 
         static void Main(string[] args)
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             Options options = new Options();
-            ConsoleUI.Verbatim = !options.BeQuiet;
+            ConsoleUI.Verbatim = options.Verbatim;
             ConsoleUI.Welcome();
 
             #region The CLA stuff
@@ -117,15 +117,22 @@ namespace HpLogger
         #region Data output handler
         static void UpdateView(object sender, EventArgs e)
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             SerialHpCounter ob = sender as SerialHpCounter;
             // format the output string
             double timeSinceStart = (ob.SampleTime - ob.InitTime).TotalSeconds;
             string dataLine = string.Format("{0,10:F1} " + outputFormat, timeSinceStart, ob.LastValue);
-            streamWriter = File.AppendText(outputFilename);
-            streamWriter.WriteLine(dataLine);
-            streamWriter.Close();
-            ConsoleUI.WriteLine(dataLine);
+            try
+            {
+                streamWriter = File.AppendText(outputFilename);
+                streamWriter.WriteLine(dataLine);
+                streamWriter.Close();
+                ConsoleUI.WriteLine(dataLine);
+            }
+            catch (Exception)
+            {
+                ConsoleUI.WriteLine("Error writing data line.");
+            }
         }
         #endregion
 
