@@ -48,14 +48,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Agilent53230A\Agilent53230A.cs" />
     <Compile Include="BaseClasses\Counter.cs" />
     <Compile Include="BaseClasses\Enumerations.cs" />
     <Compile Include="BaseClasses\Instrument.cs" />
     <Compile Include="HpSerial\SerialHpCounter.cs" />
     <Compile Include="HpSerial\SerialHpEnumerations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Srs620\Srs620.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="VisaComLib">
