@@ -139,7 +139,7 @@ namespace HpLogger
         #region Exit handler
         static void LoopReady(object sender, EventArgs e)
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             SerialHpCounter ob = sender as SerialHpCounter;
             ConsoleUI.WriteLine("Application stopped, no errors.");
             Environment.Exit(0);
