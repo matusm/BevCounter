@@ -1,22 +1,22 @@
-﻿using CommandLine;
+﻿using System.Collections.Generic;
+using CommandLine;
 using CommandLine.Text;
-using System.Collections.Generic;
 
 namespace HpLogger
 {
     public class Options
     {
-        [Option('c', "comport", DefaultValue = "COM1", HelpText = "RS232 port the counter is connected to")]
+        [Option('c', "comport", Default = "COM1", HelpText = "RS232 port the counter is connected to")]
         public string ComPortName { get; set; }
 
-        [Option('n', DefaultValue = int.MaxValue, HelpText = "Number of data points to record")]
+        [Option('n', Default = int.MaxValue, HelpText = "Number of data points to record")]
         public int NumberOfSamples { get; set; }
 
         [Option('q', "quiet", HelpText = "Quiet mode. No screen output (except for errors).")]
         public bool BeQuiet { get; set; }
         public bool Verbatim => !BeQuiet;
 
-        [Option('g', "gatetime", DefaultValue = 0, HelpText = "Gate time value in s.")]
+        [Option('g', "gatetime", Default = 0.0, HelpText = "Gate time value in s.")]
         public double GateTime { get; set; }
 
         [Option('t', "totalize", HelpText = "Force totalize mode for unknown mode.")]
@@ -25,33 +25,17 @@ namespace HpLogger
         [Option("MJD", HelpText = "Use Modified Julian Date for timestamps.")]
         public bool UseMJD { get; set; }
 
-        [Option("comment", DefaultValue = "", HelpText = "Comment for output file.")]
+        [Option("comment", Default = "", HelpText = "Comment for output file.")]
         public string UserComment { get; set; }
 
-        [ValueList(typeof(List<string>), MaximumElements = 1)]
-        public IList<string> ListOfFileNames { get; set; }
+        [Value(0, MetaName = "filename", Required = false, HelpText = "Output file name.")]
+        public string FileName { get; set; }
 
-        [HelpOption]
-        public string GetUsage()
-        {
-            string AppName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            string AppVer = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-            HelpText help = new HelpText
+        [Usage(ApplicationAlias = "HpLogger")]
+        public static IEnumerable<Example> Examples =>
+            new List<Example>
             {
-                Heading = new HeadingInfo(AppName, "version " + AppVer),
-                Copyright = new CopyrightInfo("Michael Matus", 2016),
-                AdditionalNewLineAfterOption = false,
-                AddDashesToOption = true
+                new Example("Record to file", new Options { FileName = "output" })
             };
-            string sPre = "Program to record data send by an HP/Agilent 53131A or 53181A frequency counter connected via RS232. " +
-                          "The counter settings must be entered manually on the instrument. ";
-            help.AddPreOptionsLine(sPre);
-            help.AddPreOptionsLine("");
-            help.AddPreOptionsLine("Usage: " + AppName + " filename1 [options]");
-            help.AddPostOptionsLine("");
-            help.AddOptions(this);
-            return help;
-        }
     }
 }

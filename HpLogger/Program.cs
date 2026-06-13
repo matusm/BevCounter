@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Globalization;
-using System.Linq;
 using System.IO;
+using CommandLine;
 using Bev.Counter;
 using Bev.UI;
 
@@ -17,27 +17,31 @@ namespace HpLogger
         static void Main(string[] args)
         {
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            Options options = new Options();
+
+            Options options = null;
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(o => options = o)
+                .WithNotParsed(errors =>
+                {
+                    if (errors.IsHelp() || errors.IsVersion())
+                        Environment.Exit(0);
+                    ConsoleUI.ErrorExit("Invalid command line arguments.", 1);
+                });
+
             ConsoleUI.Verbatim = options.Verbatim;
             ConsoleUI.Welcome();
 
             #region The CLA stuff
-            if (!CommandLine.Parser.Default.ParseArgumentsStrict(args, options))
-                Console.WriteLine("*** ParseArgumentsStrict returned false");
-            string[] filenames;
-            filenames = options.ListOfFileNames.ToArray();
-            if (filenames.Length == 0)
+            if (string.IsNullOrEmpty(options.FileName))
                 outputFilename = ConsoleUI.Title;
-            if (filenames.Length == 1)
-                outputFilename = Path.ChangeExtension(filenames[0], null);
-            if (filenames.Length > 1)
-                ConsoleUI.ErrorExit("More than one file name given!", 2);
+            else
+                outputFilename = Path.ChangeExtension(options.FileName, null);
             outputFilename = Path.ChangeExtension(outputFilename, "dat");
             #endregion
 
             ConsoleUI.StartOperation("Initializing stuff");
             SerialHpCounter hpCounter = new SerialHpCounter(options.ComPortName);
-            if (!hpCounter.IsConnected) 
+            if (!hpCounter.IsConnected)
                 ConsoleUI.ErrorExit("Counter not ready (wrong port?)!", 1);
 
             // register the event handlers
@@ -59,7 +63,7 @@ namespace HpLogger
                         columnDescription = "period/risetime/width or some other time in s";
                     break;
                 case MeasureMode.Frequency:
-                    if(hpCounter.GateTime == GateTime.Gate10s)
+                    if (hpCounter.GateTime == GateTime.Gate10s)
                         outputFormat = "{1,17:F4}";
                     else
                         outputFormat = "{1,16:F3}";
@@ -88,7 +92,7 @@ namespace HpLogger
             // output file stuff
             streamWriter = new StreamWriter(outputFilename);
             streamWriter.WriteLine($"Output of {ConsoleUI.Title} ver. {ConsoleUI.FullVersion}");
-            if (options.UserComment != "") 
+            if (options.UserComment != "")
                 streamWriter.WriteLine($"User comment: {options.UserComment}");
             streamWriter.WriteLine($"Logging started at {hpCounter.InitTime.ToString("dd.MM.yyyy hh:mm")}");
             streamWriter.WriteLine($"Manufacturer: {hpCounter.InstrumentManufacturer}");
@@ -110,7 +114,7 @@ namespace HpLogger
 
             // continue until user presses 'q' or 'Q'
             ConsoleUI.WriteLine("Press 'q' to exit application. (May take some time)");
-            do {} while (Console.ReadKey(true).Key != ConsoleKey.Q);
+            do { } while (Console.ReadKey(true).Key != ConsoleKey.Q);
             hpCounter.RequestStopMeasurementLoop();
         }
 
@@ -119,7 +123,6 @@ namespace HpLogger
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             SerialHpCounter ob = sender as SerialHpCounter;
-            // format the output string
             double timeSinceStart = (ob.SampleTime - ob.InitTime).TotalSeconds;
             string dataLine = string.Format("{0,10:F1} " + outputFormat, timeSinceStart, ob.LastValue);
             try
