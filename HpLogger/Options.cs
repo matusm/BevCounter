@@ -6,8 +6,8 @@ namespace HpLogger
 {
     public class Options
     {
-        [Option('c', "comport", DefaultValue = 1, HelpText = "RS232 port # the counter is connected to")]
-        public int ComPortNumber { get; set; }
+        [Option('c', "comport", DefaultValue = "COM1", HelpText = "RS232 port the counter is connected to")]
+        public string ComPortName { get; set; }
 
         [Option('n', DefaultValue = int.MaxValue, HelpText = "Number of data points to record")]
         public int NumberOfSamples { get; set; }
@@ -22,7 +22,10 @@ namespace HpLogger
         [Option('t', "totalize", HelpText = "Force totalize mode for unknown mode.")]
         public bool ForceTotalize { get; set; }
 
-        [Option("comment", DefaultValue = "", HelpText = "Comment for outpot file.")]
+        [Option("MJD", HelpText = "Use Modified Julian Date for timestamps.")]
+        public bool UseMJD { get; set; }
+
+        [Option("comment", DefaultValue = "", HelpText = "Comment for output file.")]
         public string UserComment { get; set; }
 
         [ValueList(typeof(List<string>), MaximumElements = 1)]

@@ -36,7 +36,7 @@ namespace HpLogger
             #endregion
 
             ConsoleUI.StartOperation("Initializing stuff");
-            SerialHpCounter hpCounter = new SerialHpCounter(options.ComPortNumber);
+            SerialHpCounter hpCounter = new SerialHpCounter(options.ComPortName);
             if (!hpCounter.IsConnected) 
                 ConsoleUI.ErrorExit("Counter not ready (wrong port?)!", 1);
 
